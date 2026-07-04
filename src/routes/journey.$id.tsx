@@ -48,7 +48,7 @@ function JourneyView() {
 
         {journey.messages.length > 0 && (
           <section className="mt-8 space-y-3">
-            {journey.messages.map((m) => (
+            {journey.messages.map((m: import("@/lib/journeys").Message) => (
               <div key={m.id} className="flex gap-3 rounded-2xl border border-info/30 bg-info/5 p-4">
                 <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-info/15 text-info">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 8v5M12 17h.01" /></svg>
@@ -73,7 +73,7 @@ function JourneyView() {
           <section className="mt-12">
             <h2 className="font-display text-2xl">Appointments</h2>
             <div className="mt-4 space-y-4">
-              {journey.appointments.map((a) => <AppointmentCard key={a.id} a={a} />)}
+              {journey.appointments.map((a: Appointment) => <AppointmentCard key={a.id} a={a} />)}
             </div>
           </section>
         )}
@@ -89,7 +89,7 @@ function JourneyView() {
           <section className="mt-12">
             <h2 className="font-display text-2xl">Helpful resources</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {current.resources.map((r) => <ResourceCard key={r.id} r={r} />)}
+              {current.resources.map((r: Resource) => <ResourceCard key={r.id} r={r} />)}
             </div>
           </section>
         )}
@@ -98,7 +98,7 @@ function JourneyView() {
           <section className="mt-12">
             <h2 className="font-display text-2xl">Common questions</h2>
             <div className="mt-4 soft-card divide-y divide-border">
-              {current.faqs.map((f, i) => <FAQItem key={i} faq={f} />)}
+              {current.faqs.map((f: FAQ, i: number) => <FAQItem key={i} faq={f} />)}
             </div>
           </section>
         )}
