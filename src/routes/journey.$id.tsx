@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { getJourney, journeyProgress, type Appointment, type FAQ, type Resource, type Stage, type Task, type Journey } from "@/lib/journeys";
 
 export const Route = createFileRoute("/journey/$id")({
-  loader: ({ params }) => {
+  loader: ({ params }): { journey: Journey } => {
     const journey = getJourney(params.id);
     if (!journey) throw notFound();
     return { journey };
