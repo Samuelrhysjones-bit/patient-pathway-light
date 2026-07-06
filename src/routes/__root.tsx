@@ -81,10 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "A calm, guided view of your healthcare journeys. Know where you are, what's next, and what to do." },
       { name: "author", content: "Pathway" },
       { property: "og:title", content: "Pathway — Your care journey, made clear" },
-      { property: "og:description", content: "A calm, guided view of your healthcare journeys." },
+      { property: "og:description", content: "A calm, guided view of your healthcare journeys. Know where you are, what's next, and what to do." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Pathway — Your care journey, made clear" },
+      { name: "twitter:description", content: "A calm, guided view of your healthcare journeys. Know where you are, what's next, and what to do." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9388c12d-39d2-4133-a219-a099c7166c0d/id-preview-ef730bc5--32b37f96-ab53-4c0d-8c7d-ba3b42badb46.lovable.app-1783340504057.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9388c12d-39d2-4133-a219-a099c7166c0d/id-preview-ef730bc5--32b37f96-ab53-4c0d-8c7d-ba3b42badb46.lovable.app-1783340504057.png" },
     ],
     links: [
       {
