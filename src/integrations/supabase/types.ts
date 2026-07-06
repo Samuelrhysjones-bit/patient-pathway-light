@@ -14,7 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      patient_audit_log: {
+        Row: {
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          from_stage: string | null
+          id: string
+          patient_id: string
+          to_stage: string
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          patient_id: string
+          to_stage: string
+        }
+        Update: {
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          from_stage?: string | null
+          id?: string
+          patient_id?: string
+          to_stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_audit_log_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patients: {
+        Row: {
+          access_code: string
+          created_at: string
+          created_by: string | null
+          current_stage_id: string
+          first_name: string
+          id: string
+          next_action: string | null
+          pathway: string
+          provider_ref: string
+          updated_at: string
+        }
+        Insert: {
+          access_code?: string
+          created_at?: string
+          created_by?: string | null
+          current_stage_id: string
+          first_name: string
+          id?: string
+          next_action?: string | null
+          pathway?: string
+          provider_ref: string
+          updated_at?: string
+        }
+        Update: {
+          access_code?: string
+          created_at?: string
+          created_by?: string | null
+          current_stage_id?: string
+          first_name?: string
+          id?: string
+          next_action?: string | null
+          pathway?: string
+          provider_ref?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
