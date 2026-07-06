@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as JourneyIdRouteImport } from './routes/journey.$id'
 
 const AuthRoute = AuthRouteImport.update({
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PCodeRoute = PCodeRouteImport.update({
+  id: '/p/$code',
+  path: '/p/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JourneyIdRoute = JourneyIdRouteImport.update({
   id: '/journey/$id',
   path: '/journey/$id',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
+  '/p/$code': typeof PCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
+  '/p/$code': typeof PCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
+  '/p/$code': typeof PCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/auth' | '/journey/$id'
+  fullPaths: '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/journey/$id'
-  id: '__root__' | '/' | '/admin' | '/auth' | '/journey/$id'
+  to: '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
+  id: '__root__' | '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   JourneyIdRoute: typeof JourneyIdRoute
+  PCodeRoute: typeof PCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$code': {
+      id: '/p/$code'
+      path: '/p/$code'
+      fullPath: '/p/$code'
+      preLoaderRoute: typeof PCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/journey/$id': {
       id: '/journey/$id'
       path: '/journey/$id'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   JourneyIdRoute: JourneyIdRoute,
+  PCodeRoute: PCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
