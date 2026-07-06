@@ -96,7 +96,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_patient_by_code: {
+        Args: { _code: string }
+        Returns: {
+          access_code: string
+          created_at: string
+          created_by: string | null
+          current_stage_id: string
+          first_name: string
+          id: string
+          next_action: string | null
+          pathway: string
+          provider_ref: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "patients"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       [_ in never]: never
