@@ -8,10 +8,21 @@ export const Route = createFileRoute("/admin")({
   component: AdminPage,
 });
 
+// Supabase throws plain PostgrestError objects (not Error instances), so
+// `err instanceof Error` misses them and hides the real RLS/constraint reason.
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object" && "message" in err && typeof (err as { message: unknown }).message === "string") {
+    return (err as { message: string }).message;
+  }
+  return "Failed to add";
+}
+
 type Patient = {
   id: string;
   first_name: string;
   provider_ref: string;
+  provider_id: string;
   pathway: string;
   current_stage_id: string;
   next_action: string | null;
@@ -31,6 +42,7 @@ type AuditRow = {
 function AdminPage() {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [providerId, setProviderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [audit, setAudit] = useState<AuditRow[]>([]);
@@ -39,6 +51,9 @@ function AdminPage() {
   const stageOptions = adhd.stages.map((s) => ({ id: s.id, name: s.name }));
 
   const load = useCallback(async () => {
+    // RLS already scopes these to the caller's provider, but relies on the
+    // caller having a profiles.provider_id set — see the unassigned-account
+    // guard in the render below.
     const [{ data: p }, { data: a }] = await Promise.all([
       supabase.from("patients").select("*").order("created_at", { ascending: false }),
       supabase.from("patient_audit_log").select("*").order("created_at", { ascending: false }).limit(50),
@@ -55,6 +70,12 @@ function AdminPage() {
         return;
       }
       setUserEmail(data.session.user.email ?? null);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("provider_id")
+        .eq("id", data.session.user.id)
+        .maybeSingle();
+      setProviderId(profile?.provider_id ?? null);
       await load();
       setLoading(false);
     })();
@@ -67,6 +88,20 @@ function AdminPage() {
 
   if (loading) {
     return <div className="min-h-screen grid place-items-center text-muted-foreground text-sm">Loading…</div>;
+  }
+
+  if (!providerId) {
+    return (
+      <div className="min-h-screen grid place-items-center px-5 text-center">
+        <div>
+          <p className="font-display text-2xl">Your account isn't linked to a provider yet</p>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+            An existing admin needs to assign your account to a provider before you can see or add patients.
+          </p>
+          <button onClick={signOut} className="mt-4 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-muted">Sign out</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -97,7 +132,7 @@ function AdminPage() {
           </p>
         </section>
 
-        <AddPatientForm defaultStage={stageOptions[0].id} onAdded={load} />
+        <AddPatientForm defaultStage={stageOptions[0].id} providerId={providerId} onAdded={load} />
 
         <section className="mt-10">
           <div className="mb-4 flex items-baseline justify-between">
@@ -152,7 +187,15 @@ function AdminPage() {
   );
 }
 
-function AddPatientForm({ defaultStage, onAdded }: { defaultStage: string; onAdded: () => void }) {
+function AddPatientForm({
+  defaultStage,
+  providerId,
+  onAdded,
+}: {
+  defaultStage: string;
+  providerId: string;
+  onAdded: () => void;
+}) {
   const [firstName, setFirstName] = useState("");
   const [providerRef, setProviderRef] = useState("");
   const [busy, setBusy] = useState(false);
@@ -171,6 +214,7 @@ function AddPatientForm({ defaultStage, onAdded }: { defaultStage: string; onAdd
         provider_ref: providerRef.trim(),
         pathway: "adhd",
         current_stage_id: defaultStage,
+        provider_id: providerId,
         created_by: uid,
       });
       if (error) throw error;
@@ -178,7 +222,7 @@ function AddPatientForm({ defaultStage, onAdded }: { defaultStage: string; onAdd
       setProviderRef("");
       onAdded();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add");
+      setError(extractErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -260,6 +304,7 @@ function PatientRow({
       if (stageChanged && uid) {
         await supabase.from("patient_audit_log").insert({
           patient_id: patient.id,
+          provider_id: patient.provider_id,
           actor_id: uid,
           actor_email: userEmail,
           from_stage: patient.current_stage_id,

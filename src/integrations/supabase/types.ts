@@ -22,6 +22,7 @@ export type Database = {
           from_stage: string | null
           id: string
           patient_id: string
+          provider_id: string
           to_stage: string
         }
         Insert: {
@@ -31,6 +32,7 @@ export type Database = {
           from_stage?: string | null
           id?: string
           patient_id: string
+          provider_id: string
           to_stage: string
         }
         Update: {
@@ -40,6 +42,7 @@ export type Database = {
           from_stage?: string | null
           id?: string
           patient_id?: string
+          provider_id?: string
           to_stage?: string
         }
         Relationships: [
@@ -48,6 +51,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_audit_log_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
             referencedColumns: ["id"]
           },
         ]
@@ -62,6 +72,7 @@ export type Database = {
           id: string
           next_action: string | null
           pathway: string
+          provider_id: string
           provider_ref: string
           updated_at: string
         }
@@ -74,6 +85,7 @@ export type Database = {
           id?: string
           next_action?: string | null
           pathway?: string
+          provider_id: string
           provider_ref: string
           updated_at?: string
         }
@@ -86,8 +98,73 @@ export type Database = {
           id?: string
           next_action?: string | null
           pathway?: string
+          provider_id?: string
           provider_ref?: string
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          provider_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          provider_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          brand_colour: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+        }
+        Insert: {
+          brand_colour?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+        }
+        Update: {
+          brand_colour?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
         }
         Relationships: []
       }

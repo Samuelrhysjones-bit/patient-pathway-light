@@ -4,6 +4,7 @@ export type PatientRow = {
   id: string;
   first_name: string;
   provider_ref: string;
+  provider_id: string;
   pathway: string;
   current_stage_id: string;
   next_action: string | null;
@@ -26,7 +27,7 @@ export const getPatientByCode = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("patients")
-      .select("id, first_name, provider_ref, pathway, current_stage_id, next_action, access_code, created_by, created_at, updated_at")
+      .select("id, first_name, provider_ref, provider_id, pathway, current_stage_id, next_action, access_code, created_by, created_at, updated_at")
       .eq("access_code", data.code)
       .maybeSingle();
     if (error) throw new Error(error.message);
