@@ -19,6 +19,7 @@ export type Database = {
           actor_email: string | null
           actor_id: string | null
           created_at: string
+          enrolment_id: string | null
           from_stage: string | null
           id: string
           patient_id: string
@@ -29,6 +30,7 @@ export type Database = {
           actor_email?: string | null
           actor_id?: string | null
           created_at?: string
+          enrolment_id?: string | null
           from_stage?: string | null
           id?: string
           patient_id: string
@@ -39,6 +41,7 @@ export type Database = {
           actor_email?: string | null
           actor_id?: string | null
           created_at?: string
+          enrolment_id?: string | null
           from_stage?: string | null
           id?: string
           patient_id?: string
@@ -60,44 +63,99 @@ export type Database = {
             referencedRelation: "providers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "patient_audit_log_enrolment_id_fkey"
+            columns: ["enrolment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_pathway_enrolments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_pathway_enrolments: {
+        Row: {
+          created_at: string
+          current_stage_id: string
+          id: string
+          next_action: string | null
+          patient_id: string
+          pathway_key: string
+          provider_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stage_id: string
+          id?: string
+          next_action?: string | null
+          patient_id: string
+          pathway_key: string
+          provider_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stage_id?: string
+          id?: string
+          next_action?: string | null
+          patient_id?: string
+          pathway_key?: string
+          provider_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_pathway_enrolments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_pathway_enrolments_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
         ]
       }
       patients: {
         Row: {
           access_code: string
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           created_by: string | null
-          current_stage_id: string
+          date_of_birth: string | null
           first_name: string
           id: string
-          next_action: string | null
-          pathway: string
           provider_id: string
           provider_ref: string
           updated_at: string
         }
         Insert: {
           access_code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string | null
-          current_stage_id: string
+          date_of_birth?: string | null
           first_name: string
           id?: string
-          next_action?: string | null
-          pathway?: string
           provider_id: string
           provider_ref: string
           updated_at?: string
         }
         Update: {
           access_code?: string
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string | null
-          current_stage_id?: string
+          date_of_birth?: string | null
           first_name?: string
           id?: string
-          next_action?: string | null
-          pathway?: string
           provider_id?: string
           provider_ref?: string
           updated_at?: string
@@ -131,6 +189,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_pathways: {
+        Row: {
+          enabled_at: string
+          id: string
+          pathway_key: string
+          provider_id: string
+        }
+        Insert: {
+          enabled_at?: string
+          id?: string
+          pathway_key: string
+          provider_id: string
+        }
+        Update: {
+          enabled_at?: string
+          id?: string
+          pathway_key?: string
+          provider_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_pathways_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"

@@ -2,15 +2,13 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { getJourney, type Journey, type Stage, type Task, type Resource, type FAQ } from "@/lib/journeys";
-import { getPatientByCode, type PatientRow } from "@/lib/patients.functions";
+import { getPatientByCode, type EnrolmentRow, type PatientRow } from "@/lib/patients.functions";
 
 export const Route = createFileRoute("/p/$code")({
   loader: async ({ params }) => {
-    const patient = await getPatientByCode({ data: { code: params.code } });
-    if (!patient) throw notFound();
-    const journey = getJourney(patient.pathway);
-    if (!journey) throw notFound();
-    return { patient, journey };
+    const result = await getPatientByCode({ data: { code: params.code } });
+    if (!result) throw notFound();
+    return result;
   },
   component: PatientView,
   notFoundComponent: () => (
@@ -40,14 +38,10 @@ function overlayJourney(journey: Journey, currentStageId: string): Journey {
 }
 
 function PatientView() {
-  const { patient, journey: baseJourney } = Route.useLoaderData() as {
+  const { patient, enrolments } = Route.useLoaderData() as {
     patient: PatientRow;
-    journey: Journey;
+    enrolments: EnrolmentRow[];
   };
-  const journey = overlayJourney(baseJourney, patient.current_stage_id);
-  const current = journey.stages[journey.currentStageIndex];
-  const total = journey.stages.length;
-  const progress = Math.round(((journey.currentStageIndex + 0.5) / total) * 100);
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,74 +49,113 @@ function PatientView() {
 
       <main className="mx-auto max-w-4xl px-5 pb-24 pt-8">
         <header className="mt-2">
-          <p className="text-sm text-muted-foreground">{journey.provider}</p>
-          <h1 className="mt-1 font-display text-4xl sm:text-5xl">
-            Hello, {patient.first_name}.
-          </h1>
-          <p className="mt-2 text-muted-foreground">Here's where you are with your {journey.title.toLowerCase()}.</p>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <StatCard label="Where you are" value={`Stage ${journey.currentStageIndex + 1} of ${total}`} sub={current.name} />
-            <StatCard
-              label="What's next"
-              value={patient.next_action?.trim() ? patient.next_action : journey.nextLine}
-              sub={journey.waitEstimate ? `Estimated: ${journey.waitEstimate}` : undefined}
-            />
-            <StatCard label="Overall progress" value={`${progress}%`} bar={progress} />
-          </div>
+          <h1 className="font-display text-4xl sm:text-5xl">Hello, {patient.first_name}.</h1>
+          <p className="mt-2 text-muted-foreground">
+            {enrolments.length > 1
+              ? "Here's where you are across your care."
+              : "Here's where you are with your care."}
+          </p>
         </header>
 
-        {patient.next_action?.trim() && (
-          <section className="mt-8">
-            <div className="flex gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
-              <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 8v5M12 17h.01" /></svg>
-              </div>
-              <div>
-                <p className="text-sm font-medium">A note from your care team</p>
-                <p className="mt-1 text-sm text-muted-foreground">{patient.next_action}</p>
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section className="mt-10">
-          <h2 className="font-display text-2xl">Do you need to do anything?</h2>
-          <div className="mt-4">
-            <TasksBlock tasks={current.tasks ?? []} />
+        {enrolments.length === 0 && (
+          <div className="soft-card mt-8 p-6 text-center text-sm text-muted-foreground">
+            You're not currently on an active pathway. If this looks wrong, please contact your care team.
           </div>
-        </section>
-
-        <section className="mt-12">
-          <h2 className="font-display text-2xl">Your journey</h2>
-          <div className="mt-5 soft-card p-6">
-            <ol className="space-y-0">
-              {journey.stages.map((s, i) => (
-                <StageRow key={s.id} stage={s} isLast={i === journey.stages.length - 1} />
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {current.resources && current.resources.length > 0 && (
-          <section className="mt-12">
-            <h2 className="font-display text-2xl">Helpful resources</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {current.resources.map((r: Resource) => <ResourceCard key={r.id} r={r} />)}
-            </div>
-          </section>
         )}
 
-        {current.faqs && current.faqs.length > 0 && (
-          <section className="mt-12">
-            <h2 className="font-display text-2xl">Common questions</h2>
-            <div className="mt-4 soft-card divide-y divide-border">
-              {current.faqs.map((f: FAQ, i: number) => <FAQItem key={i} faq={f} />)}
-            </div>
-          </section>
-        )}
+        {enrolments.map((enrolment) => {
+          const baseJourney = getJourney(enrolment.pathway_key);
+          if (!baseJourney) return null;
+          return (
+            <PathwaySection
+              key={enrolment.id}
+              journey={overlayJourney(baseJourney, enrolment.current_stage_id)}
+              nextAction={enrolment.next_action}
+              showTitle={enrolments.length > 1}
+            />
+          );
+        })}
       </main>
     </div>
+  );
+}
+
+function PathwaySection({
+  journey,
+  nextAction,
+  showTitle,
+}: {
+  journey: Journey;
+  nextAction: string | null;
+  showTitle: boolean;
+}) {
+  const current = journey.stages[journey.currentStageIndex];
+  const total = journey.stages.length;
+  const progress = Math.round(((journey.currentStageIndex + 0.5) / total) * 100);
+
+  return (
+    <section className="mt-10 border-t border-border pt-10 first:mt-6 first:border-t-0 first:pt-0">
+      {showTitle && <h2 className="font-display text-2xl">{journey.title}</h2>}
+      <p className="mt-1 text-sm text-muted-foreground">{journey.provider}</p>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <StatCard label="Where you are" value={`Stage ${journey.currentStageIndex + 1} of ${total}`} sub={current.name} />
+        <StatCard
+          label="What's next"
+          value={nextAction?.trim() ? nextAction : journey.nextLine}
+          sub={journey.waitEstimate ? `Estimated: ${journey.waitEstimate}` : undefined}
+        />
+        <StatCard label="Overall progress" value={`${progress}%`} bar={progress} />
+      </div>
+
+      {nextAction?.trim() && (
+        <div className="mt-6 flex gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
+          <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 8v5M12 17h.01" /></svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium">A note from your care team</p>
+            <p className="mt-1 text-sm text-muted-foreground">{nextAction}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-8">
+        <h3 className="font-display text-xl">Do you need to do anything?</h3>
+        <div className="mt-4">
+          <TasksBlock tasks={current.tasks ?? []} />
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <h3 className="font-display text-xl">Your journey</h3>
+        <div className="mt-5 soft-card p-6">
+          <ol className="space-y-0">
+            {journey.stages.map((s, i) => (
+              <StageRow key={s.id} stage={s} isLast={i === journey.stages.length - 1} />
+            ))}
+          </ol>
+        </div>
+      </div>
+
+      {current.resources && current.resources.length > 0 && (
+        <div className="mt-10">
+          <h3 className="font-display text-xl">Helpful resources</h3>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {current.resources.map((r: Resource) => <ResourceCard key={r.id} r={r} />)}
+          </div>
+        </div>
+      )}
+
+      {current.faqs && current.faqs.length > 0 && (
+        <div className="mt-10">
+          <h3 className="font-display text-xl">Common questions</h3>
+          <div className="mt-4 soft-card divide-y divide-border">
+            {current.faqs.map((f: FAQ, i: number) => <FAQItem key={i} faq={f} />)}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

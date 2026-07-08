@@ -1,3 +1,10 @@
+export type PathwayKey = "adhd" | "autism";
+
+export const PATHWAY_CATALOGUE: { key: PathwayKey; label: string }[] = [
+  { key: "adhd", label: "ADHD Assessment" },
+  { key: "autism", label: "Autism Assessment" },
+];
+
 export type StageStatus = "complete" | "current" | "upcoming";
 
 export type Task = {
@@ -162,9 +169,58 @@ const adhd: Journey = {
   ],
 };
 
-export const journeys: Journey[] = [adhd];
+const autism: Journey = {
+  id: "autism",
+  title: "Autism Assessment",
+  condition: "Adult autism pathway",
+  provider: "Meadowbrook Health",
+  accent: "mist",
+  currentStageIndex: 1,
+  statusLine: "On the waiting list for assessment",
+  nextLine: "We'll be in touch when it's time to prepare for your assessment.",
+  waitEstimate: "3–4 months",
+  messages: [],
+  appointments: [],
+  timeline: [
+    { id: "t1", label: "Referral received", date: "8 Jan" },
+    { id: "t2", label: "Referral accepted", date: "20 Jan" },
+  ],
+  stages: [
+    {
+      id: "s1",
+      name: "Referral received",
+      status: "complete",
+      description: "Your referral has been received and logged.",
+    },
+    {
+      id: "s2",
+      name: "Referral accepted",
+      status: "current",
+      estimatedDuration: "3–4 months",
+      description: "You're on the waiting list for an autism assessment.",
+      providerDoing: "We're working through our waiting list in order.",
+      patientDoing: "No action needed while you wait.",
+      nextStep: "We'll contact you when it's time to prepare for your assessment.",
+      resources: [
+        { id: "r1", title: "What to expect from an autism assessment", type: "PDF", description: "A short guide to the assessment process." },
+        { id: "r2", title: "Autism support network", type: "Support", description: "Independent charity offering peer support." },
+      ],
+      faqs: [
+        { q: "How long is the waiting list?", a: "Most people are offered an assessment within 3–4 months, though this can vary." },
+        { q: "Will I be kept updated?", a: "Yes — we'll message you if anything changes, and you can check this page any time." },
+      ],
+    },
+    { id: "s3", name: "Pre-assessment preparation", status: "upcoming", description: "We'll ask you to complete some background information before your assessment." },
+    { id: "s4", name: "Assessment booked", status: "upcoming", description: "We'll offer you an assessment slot by letter and message." },
+    { id: "s5", name: "Assessment completed", status: "upcoming", description: "You'll meet with a specialist clinician for your assessment." },
+    { id: "s6", name: "Outcome being prepared", status: "upcoming", description: "Our team is preparing your outcome report." },
+    { id: "s7", name: "Next steps", status: "upcoming", description: "You'll receive a written outcome and next-step recommendations." },
+  ],
+};
 
-export function getJourney(id: string): Journey | undefined {
+export const journeys: Journey[] = [adhd, autism];
+
+export function getJourney(id: PathwayKey | string): Journey | undefined {
   return journeys.find((j) => j.id === id);
 }
 
