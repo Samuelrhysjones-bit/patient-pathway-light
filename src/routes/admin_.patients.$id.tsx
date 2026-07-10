@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getJourney, PATHWAY_CATALOGUE, type PathwayKey } from "@/lib/journeys";
-import { useProviderAuth } from "@/lib/useProviderAuth";
 import {
   EnrolmentRow,
   extractErrorMessage,
@@ -18,7 +17,10 @@ export const Route = createFileRoute("/admin/patients/$id")({
 
 function PatientProfilePage() {
   const { id } = Route.useParams();
-  const { loading: authLoading, userEmail, providerId, signOut } = useProviderAuth();
+  const navigate = useNavigate();
+  const [authLoading, setAuthLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [providerId, setProviderId] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [patient, setPatient] = useState<Patient | null>(null);
   const [enrolments, setEnrolments] = useState<Enrolment[]>([]);
@@ -34,6 +36,29 @@ function PatientProfilePage() {
     setEnrolments((e as Enrolment[] | null) ?? []);
     setEnabledPathways(((pp as { pathway_key: PathwayKey }[] | null) ?? []).map((row) => row.pathway_key));
   }, [id]);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        navigate({ to: "/auth" });
+        return;
+      }
+      setUserEmail(data.session.user.email ?? null);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("provider_id")
+        .eq("id", data.session.user.id)
+        .maybeSingle();
+      setProviderId(profile?.provider_id ?? null);
+      setAuthLoading(false);
+    })();
+  }, [navigate]);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
 
   useEffect(() => {
     if (!providerId) return;
