@@ -10,7 +10,7 @@ import {
   type Patient,
 } from "@/routes/admin";
 
-export const Route = createFileRoute("/admin/patients/$id")({
+export const Route = createFileRoute("/admin_/patients/$id")({
   ssr: false,
   component: PatientProfilePage,
 });

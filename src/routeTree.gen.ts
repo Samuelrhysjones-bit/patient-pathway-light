@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as JourneyIdRouteImport } from './routes/journey.$id'
+import { Route as AdminPatientsIdRouteImport } from './routes/admin_.patients.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -40,6 +41,11 @@ const JourneyIdRoute = JourneyIdRouteImport.update({
   path: '/journey/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPatientsIdRoute = AdminPatientsIdRouteImport.update({
+  id: '/admin_/patients/$id',
+  path: '/admin/patients/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
   '/p/$code': typeof PCodeRoute
+  '/admin/patients/$id': typeof AdminPatientsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
   '/p/$code': typeof PCodeRoute
+  '/admin/patients/$id': typeof AdminPatientsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,33 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/journey/$id': typeof JourneyIdRoute
   '/p/$code': typeof PCodeRoute
+  '/admin_/patients/$id': typeof AdminPatientsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/journey/$id'
+    | '/p/$code'
+    | '/admin/patients/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
-  id: '__root__' | '/' | '/admin' | '/auth' | '/journey/$id' | '/p/$code'
+  to:
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/journey/$id'
+    | '/p/$code'
+    | '/admin/patients/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/auth'
+    | '/journey/$id'
+    | '/p/$code'
+    | '/admin_/patients/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +105,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   JourneyIdRoute: typeof JourneyIdRoute
   PCodeRoute: typeof PCodeRoute
+  AdminPatientsIdRoute: typeof AdminPatientsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JourneyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/patients/$id': {
+      id: '/admin_/patients/$id'
+      path: '/admin/patients/$id'
+      fullPath: '/admin/patients/$id'
+      preLoaderRoute: typeof AdminPatientsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +161,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   JourneyIdRoute: JourneyIdRoute,
   PCodeRoute: PCodeRoute,
+  AdminPatientsIdRoute: AdminPatientsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
